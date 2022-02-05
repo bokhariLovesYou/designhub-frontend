@@ -1,11 +1,11 @@
-# Design Lab | OneIMS
+# Design Hub | Frontend
 
 ## Installing
 
 ```bash
 # From Source
-git clone https://github.com/oneims/bp-generator.git
-cd bp-generator
+git clone https://github.com/bokhariLovesYou/designhub-frontend.git
+cd designhub-frontend
 ```
 
 then install dependencies
