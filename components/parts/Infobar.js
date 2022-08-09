@@ -35,7 +35,7 @@ const Infobar = (props) => {
                 Page Settings
               </button>
             </div>
-            <div className="theme-column ml-1">
+            {/* <div className="theme-column ml-1">
               <div
                 onClick={props.enableResponsiveMode}
                 className="cursor-pointer px-3 py-2 w-max rounded border border-theme-border bg-theme-panel-dark text-theme-text-light text-sm hover:bg-theme-panel-hover"
@@ -70,7 +70,7 @@ const Infobar = (props) => {
                   </svg>
                 )}
               </div>
-            </div>
+            </div> */}
             <div className="pl-1 flex items-center">
               <div className="theme-column ml-1">
                 <button

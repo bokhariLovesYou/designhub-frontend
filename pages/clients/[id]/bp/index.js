@@ -19,6 +19,9 @@ import { useRouter } from "next/router";
 
 import { parseISO, format } from "date-fns";
 
+// SEO
+import { NextSeo } from "next-seo";
+
 const BlueprintsIndex = () => {
   const router = useRouter();
   const { id } = router.query;
@@ -78,6 +81,14 @@ const BlueprintsIndex = () => {
   }, []);
   return (
     <>
+      <NextSeo
+        title={
+          data
+            ? `${data.data.attributes.title} Blueprints | Design Lab | OneIMS`
+            : `All Blueprints | Design Lab | OneIMS`
+        }
+        description={``}
+      />
       <DashboardHeader />
       <Main>
         {data && (

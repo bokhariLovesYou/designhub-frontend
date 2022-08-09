@@ -16,6 +16,8 @@ import { InputLF, TextareaLF } from "@/components/core/FormElements";
 import { Dialog, Transition } from "@headlessui/react";
 import { format } from "date-fns";
 import toast, { Toaster } from "react-hot-toast";
+// SEO
+import { NextSeo } from "next-seo";
 
 import {
   DndContext,
@@ -330,6 +332,12 @@ const BlueprintSingular = () => {
 
   return (
     <>
+      <NextSeo
+        title={
+          data ? `${attributes.title} | Design Lab | OneIMS` : `Blueprints | Design Lab | OneIMS`
+        }
+        description={``}
+      />
       <DashboardHeader />
       <Main>
         {data && (

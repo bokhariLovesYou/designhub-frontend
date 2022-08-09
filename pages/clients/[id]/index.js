@@ -7,6 +7,8 @@ import Link from "next/link";
 import Spinner from "@/components/core/Spinner";
 import { useClientGET } from "@/lib/Fetcher";
 import { useRouter } from "next/router";
+// SEO
+import { NextSeo } from "next-seo";
 
 const ClientSingular = () => {
   const router = useRouter();
@@ -14,6 +16,14 @@ const ClientSingular = () => {
   const { data, isLoading, isError } = useClientGET(id);
   return (
     <>
+      <NextSeo
+        title={
+          data
+            ? `${data?.data?.attributes?.title} | Design Lab | OneIMS`
+            : `Client Overview | Design Lab | OneIMS`
+        }
+        description={``}
+      />
       <DashboardHeader logoCentered />
       <Main>
         {isLoading && <PageTitle title="Loading" className="text-center" />}

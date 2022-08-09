@@ -6,12 +6,15 @@ import ContentWrapper from "@/components/parts/ContentWrapper";
 import Spinner from "@/components/core/Spinner";
 import { useClientsGET } from "@/lib/Fetcher";
 import Link from "next/link";
+// SEO
+import { NextSeo } from "next-seo";
 
 const ClientsIndex = () => {
   const { data, isLoading, isError } = useClientsGET();
 
   return (
     <>
+      <NextSeo title={`All Clients | Design Lab | OneIMS`} description={``} />
       <DashboardHeader />
       <Main>
         <PageTitle title=" All Clients" />
