@@ -1,0 +1,129 @@
+.BS_ENABLED {
+  // @import "includes/bootstrap";
+  //   @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Roboto:ital,wght@0,400;0,500;0,700;1,400&display=swap");
+  @import "../../node_modules/bootstrap/scss/bootstrap.scss";
+  // overflow-x: hidden !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.7;
+  //   font-family: "Inter", sans-serif;
+  font-weight: 400;
+  color: $theme_primary-body-color;
+  .container {
+    @media (min-width: 1400px) {
+      max-width: 1140px;
+    }
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  .h1,
+  .h2,
+  .h3,
+  .h4,
+  .h5,
+  .h6 {
+    line-height: 1.2;
+    font-weight: 800;
+    color: $theme_headings-color;
+  }
+  h1,
+  .h1 {
+    font-size: 3.25rem;
+  }
+  h2,
+  .h2 {
+    font-size: 2.5rem;
+  }
+  h3,
+  .h3 {
+    font-size: 2.25rem;
+  }
+  h4,
+  .h4 {
+    font-size: 2rem;
+  }
+  h5,
+  .h5 {
+    font-size: 1.75rem;
+  }
+  h6,
+  .h6 {
+    font-size: 1.5rem;
+  }
+  .h7 {
+    font-size: 1rem;
+  }
+  a {
+    color: $theme_primary-color;
+    &:hover {
+      color: $theme_primary-color;
+      text-decoration: underline;
+    }
+  }
+}
+
+// Keyframe Animations
+@keyframes rotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dash {
+  0% {
+    stroke-dasharray: 1, 200;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 89, 200;
+    stroke-dashoffset: -35px;
+  }
+  100% {
+    stroke-dasharray: 89, 200;
+    stroke-dashoffset: -124px;
+  }
+}
+
+// @keyframes color {
+//   100%,
+//   0% {
+//     stroke: $theme_primary-color;
+//   }
+//   40% {
+//     stroke: $theme_primary-color;
+//   }
+//   66% {
+//     stroke: $theme_primary-color;
+//   }
+//   80%,
+//   90% {
+//     stroke: $theme_primary-color;
+//   }
+// }
+
+@keyframes colorWhite {
+  100%,
+  0% {
+    stroke: #fff;
+  }
+  40% {
+    stroke: #fff;
+  }
+  66% {
+    stroke: #fff;
+  }
+  80%,
+  90% {
+    stroke: #fff;
+  }
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}

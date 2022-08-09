@@ -10,6 +10,8 @@ const Header = (props) => {
         updatePage={props.updatePage}
         updatePageDraft={props.updatePageDraft}
         router={props.router}
+        publishPage={props.publishPage}
+        handlePublishPage={props.handlePublishPage}
         clientId={props.clientId}
         pageData={props.pageData ? props.pageData : null}
         clientData={props.clientData ? props.clientData : null}
@@ -26,6 +28,9 @@ const Header = (props) => {
         clientId={props.clientId}
         pageData={props.pageData ? props.pageData : null}
         clientData={props.clientData ? props.clientData : null}
+        canSave={props.canSave}
+        updatePage={props.updatePage}
+        updatePageDraft={props.updatePageDraft}
       />
     </header>
   );

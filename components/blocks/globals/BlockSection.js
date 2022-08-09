@@ -39,7 +39,7 @@ const BlockSection = ({
           }}
         >
           {isHovered && enabled && (
-            <div className="absolute top-0 right-0 bg-gray-700 text-white z-10">
+            <div className="absolute top-0 right-0 bg-gray-700 z-10 CUSTOM__text-white">
               <div className="flex">
                 <div
                   className="column px-2 py-2 hover:bg-gray-500 cursor-pointer"

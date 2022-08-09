@@ -11,7 +11,7 @@ import { useMediaGET } from "@/lib/Fetcher";
 
 const MediaGallery = (props) => {
   const { data, isLoading, isError } = useMediaGET();
-  const { globalState, handlers } = useAppContext();
+  const { globalState, richTextMedia, handlers } = useAppContext();
   const { actions, selected } = useEditor((state) => {
     const currentNodeId = [...state.events.selected][0];
     let selected;
@@ -33,8 +33,22 @@ const MediaGallery = (props) => {
 
   const selectImage = (url, alt) => {
     actions.setProp(selected.id, (props) => {
-      props[globalState.mediaGalleryFieldSelected] = { url, alt };
+      if (richTextMedia.intent) {
+        return null;
+      }
+      if (props?.hasRepeater) {
+        const repeaterName = globalState?.repeaterMeta?.repeaterName;
+        const selectedIndex = globalState?.repeaterMeta?.editingIndex;
+        const fieldName = globalState?.mediaGalleryFieldSelected;
+        props[repeaterName][selectedIndex][fieldName] = { url, alt };
+      } else {
+        props[globalState.mediaGalleryFieldSelected] = { url, alt };
+      }
     });
+    handlers.handleRichTextImageSource(url);
+    setTimeout(() => {
+      handlers.handleRichTextImageIntent(false);
+    }, 200);
     handlers.handleDrawer();
   };
 

@@ -1,0 +1,11 @@
+// ******Block styles -- Bootstrap enabled ******
+@import "variables";
+@import "app";
+// Theme specific global styles for blocks
+.BS_ENABLED {
+  @import "theme";
+  // Block specific styles
+  @import "blocks";
+  // Module specific styles
+  @import "modules";
+}

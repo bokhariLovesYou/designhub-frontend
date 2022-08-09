@@ -5,11 +5,11 @@ import PropTypes from "prop-types";
 const Button = (props) => {
   let classList = ``;
   if (props.variant === "dark") {
-    classList = `border border-white bg-theme-dark text-white`;
+    classList = `border border-white bg-theme-dark text-white hover:bg-theme-dark-hover`;
   } else if (props.variant === "secondary") {
     classList = `border-theme-secondary bg-theme-secondary text-white`;
   } else {
-    classList = `border-theme-primary bg-theme-primary text-white`;
+    classList = `border-theme-primary bg-theme-primary text-white hover:bg-theme-primary-hover`;
   }
   return (
     <button

@@ -30,6 +30,7 @@ module.exports = {
         },
         "theme-dark": {
           DEFAULT: "#253342",
+          hover: "#ffffff0d",
         },
         "theme-light": {
           DEFAULT: "#F6F6F7",

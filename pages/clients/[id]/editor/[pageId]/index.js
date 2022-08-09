@@ -2,29 +2,25 @@ import React, { useState, useEffect } from "react";
 import Header from "@/components/layouts/editor/Header";
 import Sidebar from "@/components/layouts/editor/Sidebar";
 import Main from "@/components/layouts/Main";
-import SimpleContent from "@/components/blocks/SimpleContent";
 import Drawer from "@/components/parts/Drawer";
 import MediaDrawer from "@/components/parts/MediaDrawer";
 import ImageGallery from "@/components/parts/ImageGallery";
 import { Container } from "@/components/blocks/Container";
+// Expanded Richtext Editor
+import ExpandedRichTextEditor from "@/components/parts/ExpandedRichTextEditor";
+// Global Context
 import { useAppContext } from "@/context/AppWrapper";
-
-// Blocks
-import { HeadingDescriptionCta, HeadingWithContent } from "@/components/blocks";
-
+// All Blocks
+import AllBlocks from "@/lib/AllBlocks";
 // SEO
 import { NextSeo } from "next-seo";
-
 // Craft
 import { Editor, Frame, Element } from "@craftjs/core";
-
 // Static Blocks
 import FrameHeader from "@/components/blocks/staticBlocks/FrameHeader";
 import FrameFooter from "@/components/blocks/staticBlocks/FrameFooter";
-
 // Compressor
 import lz from "lzutf8";
-
 // Fetchers
 import Spinner from "@/components/core/Spinner";
 import axios from "axios";
@@ -32,7 +28,6 @@ import { Sleeper } from "@/lib/Helpers";
 import { useRouter } from "next/router";
 import { useSWRConfig } from "swr";
 import { usePageByIdGET } from "@/lib/Fetcher";
-
 // Form
 import { useForm } from "react-hook-form";
 import { InputLF, TextareaLF } from "@/components/core/FormElements";
@@ -55,6 +50,11 @@ const PageEditor = () => {
     isError: null,
   });
   const [updatePage, setUpdatePage] = useState({
+    response: null,
+    isLoading: false,
+    isError: null,
+  });
+  const [publishPage, setPublishPage] = useState({
     response: null,
     isLoading: false,
     isError: null,
@@ -210,6 +210,54 @@ const PageEditor = () => {
     putPayload();
   };
 
+  const handlePublishPage = (value) => {
+    const publishedAtTimestamp = new Date().toISOString();
+    updatePageDraft();
+    setPublishPage((prevState) => ({ ...prevState, isLoading: true }));
+    const payload = {
+      data: {
+        publishedAtTimestamp: value === "unpublish" ? null : publishedAtTimestamp,
+        status: value === "unpublish" ? "draft" : "published",
+        editorState: value === "unpublish" ? null : lz.encodeBase64(lz.compress(pageQuery)),
+      },
+    };
+    const putPayload = async () => {
+      await axios
+        .put(`${process.env.NEXT_PUBLIC_API_URL}/pages/${pageId}`, payload)
+        .then(Sleeper(500))
+        .then((res) => {
+          mutate(
+            `${process.env.NEXT_PUBLIC_API_URL}/pages/${pageId}?populate=blueprint&populate=client`,
+            (data) => {
+              return {
+                ...data,
+                publishedAtTimestamp: value === "unpublish" ? null : publishedAtTimestamp,
+                status: value === "unpublish" ? "draft" : "published",
+                editorState: value === "unpublish" ? null : lz.encodeBase64(lz.compress(pageQuery)),
+              };
+            },
+            false
+          );
+          if (typeof window !== "undefined" && pageData) {
+            window.location.href = `/clients/${id}/bp/${pageData?.blueprint?.data?.id}`;
+          }
+          setPublishPage((prevState) => ({
+            ...prevState,
+            response: res.data.data,
+            isLoading: false,
+          }));
+          mutate(
+            `${process.env.NEXT_PUBLIC_API_URL}/pages/${pageId}?populate=blueprint&populate=client`
+          );
+        })
+        .catch((err) => {
+          console.log(err);
+          setPublishPage((prevState) => ({ ...prevState, isError: true, isLoading: false }));
+        });
+    };
+    putPayload();
+  };
+
   const enableResponsiveMode = () => {
     setEnableResponsive(enableResponsive ? false : true);
   };
@@ -249,7 +297,7 @@ const PageEditor = () => {
             transition: "0s ease",
             thickness: 5,
           }}
-          resolver={{ Container, HeadingWithContent, SimpleContent, HeadingDescriptionCta }}
+          resolver={AllBlocks}
         >
           <Header
             pageSettingsHandler={pageSettingsHandler}
@@ -258,6 +306,8 @@ const PageEditor = () => {
             canSave={canSave}
             updatePage={updatePage}
             updatePageDraft={updatePageDraft}
+            publishPage={publishPage}
+            handlePublishPage={handlePublishPage}
             router={router}
             clientId={id}
             pageData={data ? pageData : null}
@@ -266,6 +316,7 @@ const PageEditor = () => {
           <Main>
             <div className="theme-row flex">
               <Sidebar
+                key={globalState.expandedRichText}
                 loading={isLoading}
                 renderLayers={renderLayers}
                 handleRenderLayers={handleRenderLayers}
@@ -281,28 +332,33 @@ const PageEditor = () => {
                   className="theme-column w-full pb-20 overflow-y-scroll"
                   style={{ height: "100vh" }}
                 >
-                  <FrameHeader loading={isLoading} clientData={data ? clientData : null} />
-                  <div className="pb-10 COMPONENT__editor" onClick={() => setRenderLayers(false)}>
-                    {data && (
-                      <>
-                        <Frame data={editorState}>
-                          <Element is={Container} padding={0} background="#fff" canvas />
-                        </Frame>
-                      </>
-                    )}
-                    {isLoading && (
-                      <>
-                        <div
-                          className="flex justify-center items-center flex-col"
-                          style={{ height: "400px" }}
-                        >
-                          <Spinner />
-                        </div>
-                      </>
-                    )}
+                  {/* Editor Expanded */}
+                  {globalState.expandedRichText && <ExpandedRichTextEditor />}
+                  {/* //End Editor Expanded */}
+                  <div className={globalState.expandedRichText ? `hidden` : ``}>
+                    <FrameHeader loading={isLoading} clientData={data ? clientData : null} />
+                    <div className="pb-10 COMPONENT__editor" onClick={() => setRenderLayers(false)}>
+                      {data && (
+                        <>
+                          <Frame data={editorState}>
+                            <Element is={Container} padding={0} background="#fff" canvas />
+                          </Frame>
+                        </>
+                      )}
+                      {isLoading && (
+                        <>
+                          <div
+                            className="flex justify-center items-center flex-col"
+                            style={{ height: "400px" }}
+                          >
+                            <Spinner />
+                          </div>
+                        </>
+                      )}
 
-                    <div></div>
-                    <FrameFooter />
+                      <div></div>
+                      <FrameFooter />
+                    </div>
                   </div>
                 </div>
               </div>

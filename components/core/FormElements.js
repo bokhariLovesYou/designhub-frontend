@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import { Fragment } from "react";
 import { Listbox, Transition } from "@headlessui/react";
@@ -6,6 +6,24 @@ import { SelectorIcon } from "@heroicons/react/solid";
 import { EditorContent } from "@tiptap/react";
 import { useAppContext } from "@/context/AppWrapper";
 import ReactSlider from "react-slider";
+// DnD Sort
+import {
+  DndContext,
+  DragOverlay,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+// PropTypes
 import PropTypes from "prop-types";
 
 export const InputLF = (props) => {
@@ -266,6 +284,14 @@ export const Slider = (props) => {
 };
 
 const MenuBar = ({ editor }) => {
+  const { handlers, richTextMedia } = useAppContext();
+
+  useEffect(() => {
+    if (richTextMedia && richTextMedia.intent) {
+      editor.chain().focus().setImage({ src: richTextMedia.src }).run();
+    }
+  }, [richTextMedia]);
+
   if (!editor) {
     return null;
   }
@@ -291,6 +317,15 @@ const MenuBar = ({ editor }) => {
         </svg>
       </button>
       <button
+        onClick={() => editor.chain().focus().toggleUnderline().run()}
+        className={editor.isActive("underline") ? "is-active" : ""}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+          <path fill="none" d="M0 0h24v24H0z" />
+          <path d="M8 3v9a4 4 0 1 0 8 0V3h2v9a6 6 0 1 1-12 0V3h2zM4 20h16v2H4v-2z" />
+        </svg>
+      </button>
+      <button
         onClick={() => editor.chain().focus().setParagraph().run()}
         className={editor.isActive("paragraph") ? "is-active" : ""}
       >
@@ -305,7 +340,7 @@ const MenuBar = ({ editor }) => {
       >
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
           <path fill="none" d="M0 0H24V24H0z" />
-          <path d="M13 20h-2v-7H4v7H2V4h2v7h7V4h2v16zm8-12v12h-2v-9.796l-2 .536V8.67L19.5 8H21z" />
+          <path d="M4 4v7h7V4h2v16h-2v-7H4v7H2V4h2zm14.5 4c2.071 0 3.75 1.679 3.75 3.75 0 .857-.288 1.648-.772 2.28l-.148.18L18.034 18H22v2h-7v-1.556l4.82-5.546c.268-.307.43-.709.43-1.148 0-.966-.784-1.75-1.75-1.75-.918 0-1.671.707-1.744 1.606l-.006.144h-2C14.75 9.679 16.429 8 18.5 8z" />
         </svg>
       </button>
       <button
@@ -314,7 +349,27 @@ const MenuBar = ({ editor }) => {
       >
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
           <path fill="none" d="M0 0H24V24H0z" />
-          <path d="M4 4v7h7V4h2v16h-2v-7H4v7H2V4h2zm14.5 4c2.071 0 3.75 1.679 3.75 3.75 0 .857-.288 1.648-.772 2.28l-.148.18L18.034 18H22v2h-7v-1.556l4.82-5.546c.268-.307.43-.709.43-1.148 0-.966-.784-1.75-1.75-1.75-.918 0-1.671.707-1.744 1.606l-.006.144h-2C14.75 9.679 16.429 8 18.5 8z" />
+          <path d="M22 8l-.002 2-2.505 2.883c1.59.435 2.757 1.89 2.757 3.617 0 2.071-1.679 3.75-3.75 3.75-1.826 0-3.347-1.305-3.682-3.033l1.964-.382c.156.806.866 1.415 1.718 1.415.966 0 1.75-.784 1.75-1.75s-.784-1.75-1.75-1.75c-.286 0-.556.069-.794.19l-1.307-1.547L19.35 10H15V8h7zM4 4v7h7V4h2v16h-2v-7H4v7H2V4h2z" />
+        </svg>
+      </button>
+      <button
+        onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()}
+        className={editor.isActive("heading", { level: 4 }) ? "is-active" : ""}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+          <path fill="none" d="M0 0H24V24H0z" />
+          <path d="M13 20h-2v-7H4v7H2V4h2v7h7V4h2v16zm9-12v8h1.5v2H22v2h-2v-2h-5.5v-1.34l5-8.66H22zm-2 3.133L17.19 16H20v-4.867z" />
+        </svg>
+      </button>
+      <button
+        onClick={() => {
+          handlers.handleDrawer();
+          handlers.handleRichTextImageIntent(true);
+        }}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+          <path fill="none" d="M0 0h24v24H0z" />
+          <path d="M5 11.1l2-2 5.5 5.5 3.5-3.5 3 3V5H5v6.1zM4 3h16a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zm11.5 7a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
         </svg>
       </button>
       <button
@@ -361,6 +416,8 @@ const MenuBar = ({ editor }) => {
 };
 
 export const Richtext = (props) => {
+  const { handlers, globalState } = useAppContext();
+
   return (
     <>
       <div className={props.wrapperClassName}>
@@ -371,14 +428,54 @@ export const Richtext = (props) => {
             </label>
           </div>
         )}
-        <div className="CUSTOM__rich-text-editor bg-white bg-clip-padding border border-solid border-gray-300 rounded">
-          <div className="CUSTOM__rich-text-editor__header bg-theme-panel-dark rounded-tl rounded-tr text-sm px-4 py-2 border-b border-solid border-gray-300">
-            <MenuBar editor={props.editor} />
-          </div>
-          <div className="CUSTOM__rich-text-editor__body bg-white">
-            <EditorContent editor={props.editor} />
-          </div>
-        </div>
+        {props.expanded ? (
+          <>
+            <div className="CUSTOM__rich-text-editor bg-white bg-clip-padding border border-solid border-gray-300 rounded">
+              <div className="CUSTOM__rich-text-editor__header bg-theme-panel-dark rounded-tl rounded-tr text-sm px-4 py-2 border-b border-solid border-gray-300">
+                <MenuBar name={props.name} editor={props.editor} />
+              </div>
+              <div className="CUSTOM__rich-text-editor__body bg-white">
+                <EditorContent editor={props.editor} />
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            {!globalState.expandedRichText ? (
+              <>
+                <div className="CUSTOM__rich-text-editor bg-white bg-clip-padding border border-solid border-gray-300 rounded">
+                  <div className="CUSTOM__rich-text-editor__header bg-theme-panel-dark rounded-tl rounded-tr text-sm px-4 py-2 border-b border-solid border-gray-300">
+                    <MenuBar name={props.name} editor={props.editor} />
+                  </div>
+                  <div className="CUSTOM__rich-text-editor__body bg-white">
+                    <EditorContent editor={props.editor} />
+                  </div>
+                </div>
+                <div className="mt-2 text-right">
+                  <button
+                    onClick={() => handlers.handleExpandedRichText(true, props.name)}
+                    type="button"
+                    className="px-6 py-2 rounded border border-theme-border bg-theme-panel text-theme-text-light text-xs hover:bg-theme-panel-dark"
+                  >
+                    Expand Editor
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="mt-2">
+                  <button
+                    onClick={() => handlers.handleExpandedRichText(false, null)}
+                    type="button"
+                    className="px-6 py-2 rounded border border-theme-border bg-theme-panel text-theme-text-light text-xs hover:bg-theme-panel-dark"
+                  >
+                    Close Expanded View
+                  </button>
+                </div>
+              </>
+            )}
+          </>
+        )}
       </div>
     </>
   );
@@ -415,8 +512,8 @@ export const ImageField = (props) => {
               <div className="flex h-full justify-center items-center flex-col">
                 <img
                   className="max-w-full max-h-full"
-                  src={props.image.url}
-                  alt={props.image.alt}
+                  src={props.image?.url}
+                  alt={props.image?.alt}
                 />
                 <div className="COMPONENT__image-preview__tint">
                   <span className="text-white text-sm">Replace</span>
@@ -471,5 +568,223 @@ export const ImageField = (props) => {
         )}
       </div>
     </>
+  );
+};
+
+export const LinkField = (props) => {
+  return (
+    <>
+      <Textarea
+        wrapperClassName="mt-5"
+        label="Button Title"
+        onChange={props.linkTitleOnChange}
+        value={props.linkTitleValue}
+        placeholder="Add Button Title"
+      />
+      <Textarea
+        wrapperClassName="mt-5"
+        label="Button Destination"
+        onChange={props.linkDestinationOnChange}
+        value={props.linkDestinationValue}
+        placeholder="Add Button Destination"
+      />
+    </>
+  );
+};
+
+export const RepeaterField = (props) => {
+  const { repeater, repeaterEditingMeta } = props;
+  const [activeID, setActiveID] = useState(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+  return (
+    <>
+      <div className={props.wrapperClassName}>
+        {props.label && (
+          <div className="mb-2 flex items-center justify-between">
+            <label className="text-theme-text-light font-small block" htmlFor={props.name}>
+              {props.label}
+            </label>
+            <div>
+              <span
+                onClick={props.handleAdd}
+                className="text-theme-notify block text-xs cursor-pointer hover:underline"
+              >
+                + Add
+              </span>
+            </div>
+          </div>
+        )}
+
+        <div className="mt-2">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext items={repeater} strategy={verticalListSortingStrategy}>
+              {repeater.map((elem, index) => {
+                return (
+                  <RepeaterListItem
+                    key={index}
+                    elem={elem}
+                    index={index}
+                    repeaterName={props.name}
+                    repeaterEditingMeta={repeaterEditingMeta}
+                    handleEdit={props.handleEdit}
+                    handleClone={props.handleClone}
+                    handleDelete={props.handleDelete}
+                    id={elem.id}
+                  />
+                );
+              })}
+            </SortableContext>
+            <DragOverlay>
+              {activeID ? (
+                <RepeaterListItem
+                  elem={repeater.find((x) => x.id === activeID)}
+                  handleEdit={props.handleEdit}
+                  handleClone={props.handleClone}
+                  handleDelete={props.handleDelete}
+                />
+              ) : null}
+            </DragOverlay>
+          </DndContext>
+        </div>
+
+        {props.children}
+      </div>
+    </>
+  );
+  function handleDragEnd(event) {
+    const { active, over } = event;
+    if (active?.id !== over?.id) {
+      return props.handleMove(active, over);
+    }
+    setActiveID(null);
+  }
+
+  function handleDragStart(event) {
+    props.handleFinishEdit();
+    setActiveID(event.active.id);
+  }
+};
+
+export const RepeaterListItem = ({
+  elem,
+  index,
+  repeaterName,
+  repeaterEditingMeta,
+  handleEdit,
+  handleClone,
+  handleDelete,
+  id,
+}) => {
+  const { handlers } = useAppContext();
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  const sortingLabel = elem?.sortingLabel;
+
+  return (
+    <div
+      data-attribute-id={id}
+      ref={setNodeRef}
+      style={style}
+      key={index}
+      className={`border flex items-center justify-between border-theme-border bg-white px-3 pl-4 py-2 ${
+        index > 0 && `border-t-0`
+      }`}
+    >
+      <span className="text-theme-text-light text-sm block truncate pr-5 flex items-center">
+        <button type="button" {...listeners} {...attributes} className="pr-3">
+          <svg xmlns="http://www.w3.org/2000/svg" style={{ width: "5px", height: "24px" }}>
+            <path
+              fill="#516f90"
+              d="M0 0h2v2H0V0zm0 8h2v2H0V8zm0 8h2v2H0v-2zM0 4h2v2H0V4zm0 8h2v2H0v-2zm0 8h2v2H0v-2zM3 0h2v2H3V0zm0 8h2v2H3V8zm0 8h2v2H3v-2zM3 4h2v2H3V4zm0 8h2v2H3v-2zm0 8h2v2H3v-2z"
+            />
+          </svg>
+        </button>
+        <span className="truncate pr-3">
+          {elem && elem.sortingLabel ? elem[sortingLabel] : `...`}
+        </span>
+      </span>
+      <div className="flex theme-row text-theme-notify -mx-2 items-center">
+        {repeaterEditingMeta && repeaterEditingMeta.index === index && (
+          <div className="theme-column px-2">
+            <div className="badge bg-theme-primary border-none flex">
+              <span style={{ fontSize: "0.6rem" }}>Editing</span>
+            </div>
+          </div>
+        )}
+        <div
+          className="theme-column px-2 cursor-pointer"
+          onClick={() => {
+            handleEdit(index),
+              handlers.handleRepeaterMeta({
+                repeaterName,
+                editingIndex: index,
+              });
+          }}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+            />
+          </svg>
+        </div>
+        <div className="theme-column px-2 cursor-pointer" onClick={() => handleClone(index)}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+            />
+          </svg>
+        </div>
+        <div className="theme-column px-2 cursor-pointer" onClick={() => handleDelete(index)}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+            />
+          </svg>
+        </div>
+      </div>
+    </div>
   );
 };

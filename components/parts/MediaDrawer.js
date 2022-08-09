@@ -74,6 +74,7 @@ const MediaDrawer = (props) => {
               <button
                 onClick={() => {
                   handlers.handleDrawer();
+                  handlers.handleRichTextImageIntent(false);
                 }}
                 className="cursor-pointer block"
                 type="button"

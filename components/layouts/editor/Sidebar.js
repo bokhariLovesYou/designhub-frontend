@@ -1,6 +1,13 @@
 import React, { useState } from "react";
 import BlockCard from "@/components/core/BlockCard";
-import { HeadingDescriptionCta, HeadingWithContent } from "@/components/blocks";
+import {
+  HeadingDescriptionCta,
+  HeadingWithSubtitle,
+  TwoColumnImageContent,
+  TestimonialCardWithHeading,
+  CardsRow,
+  SimpleContent,
+} from "@/components/blocks";
 import { Element, useEditor } from "@craftjs/core";
 import { Layers } from "@craftjs/layers";
 import Spinner from "@/components/core/Spinner";
@@ -171,49 +178,64 @@ const Sidebar = ({ renderLayers, handleRenderLayers, loading }) => {
                       <h2 className="font-medium">Hero Blocks</h2>
                     </div>
                     <div className="theme-row flex flex-wrap -mx-1">
-                      {Array.from(Array(5).keys()).map((elem, index) => (
-                        <BlockCard
-                          connectors={connectors}
-                          component={<HeadingDescriptionCta />}
-                          key={index}
-                          title={HeadingDescriptionCta.craft?.displayName}
-                          previewImage={HeadingDescriptionCta.craft?.preview}
-                          renderBlockPreview={renderBlockPreview}
-                          unsetBlockPreview={unsetBlockPreview}
-                        />
-                      ))}
-                    </div>
-                    <div className="theme-box text-theme-text-light py-4">
-                      <h2 className="font-medium">Feature Blocks</h2>
-                    </div>
-                    <div className="theme-row flex flex-wrap -mx-1">
-                      {Array.from(Array(3).keys()).map((elem, index) => (
-                        <BlockCard
-                          connectors={connectors}
-                          component={<HeadingWithContent />}
-                          title={`Heading With Content`}
-                          previewImage={HeadingWithContent.craft?.preview}
-                          renderBlockPreview={renderBlockPreview}
-                          unsetBlockPreview={unsetBlockPreview}
-                          key={index}
-                        />
-                      ))}
+                      <BlockCard
+                        connectors={connectors}
+                        component={<HeadingDescriptionCta />}
+                        title={HeadingDescriptionCta.craft?.displayName}
+                        previewImage={HeadingDescriptionCta.craft?.preview}
+                        renderBlockPreview={renderBlockPreview}
+                        unsetBlockPreview={unsetBlockPreview}
+                      />
                     </div>
                     <div className="theme-box text-theme-text-light py-4">
                       <h2 className="font-medium">Content Blocks</h2>
                     </div>
                     <div className="theme-row flex flex-wrap -mx-1">
-                      {Array.from(Array(4).keys()).map((elem, index) => (
-                        <BlockCard
-                          connectors={connectors}
-                          component={<HeadingDescriptionCta />}
-                          previewImage={HeadingDescriptionCta.craft?.preview}
-                          renderBlockPreview={renderBlockPreview}
-                          title={`Heading Description CTA`}
-                          unsetBlockPreview={unsetBlockPreview}
-                          key={index}
-                        />
-                      ))}
+                      <BlockCard
+                        connectors={connectors}
+                        component={<HeadingWithSubtitle />}
+                        title={HeadingWithSubtitle.craft?.displayName}
+                        previewImage={HeadingWithSubtitle.craft?.preview}
+                        renderBlockPreview={renderBlockPreview}
+                        unsetBlockPreview={unsetBlockPreview}
+                      />
+                      <BlockCard
+                        connectors={connectors}
+                        component={<TwoColumnImageContent />}
+                        title={TwoColumnImageContent.craft?.displayName}
+                        previewImage={TwoColumnImageContent.craft?.preview}
+                        renderBlockPreview={renderBlockPreview}
+                        unsetBlockPreview={unsetBlockPreview}
+                      />
+                      <BlockCard
+                        connectors={connectors}
+                        component={<SimpleContent />}
+                        title={SimpleContent.craft?.displayName}
+                        previewImage={SimpleContent.craft?.preview}
+                        renderBlockPreview={renderBlockPreview}
+                        unsetBlockPreview={unsetBlockPreview}
+                      />
+                      <BlockCard
+                        connectors={connectors}
+                        component={<CardsRow />}
+                        title={CardsRow.craft?.displayName}
+                        previewImage={CardsRow.craft?.preview}
+                        renderBlockPreview={renderBlockPreview}
+                        unsetBlockPreview={unsetBlockPreview}
+                      />
+                    </div>
+                    <div className="theme-box text-theme-text-light py-4">
+                      <h2 className="font-medium">Testimonial Blocks</h2>
+                    </div>
+                    <div className="theme-row flex flex-wrap -mx-1">
+                      <BlockCard
+                        connectors={connectors}
+                        component={<TestimonialCardWithHeading />}
+                        title={TestimonialCardWithHeading.craft?.displayName}
+                        previewImage={TestimonialCardWithHeading.craft?.preview}
+                        renderBlockPreview={renderBlockPreview}
+                        unsetBlockPreview={unsetBlockPreview}
+                      />
                     </div>
                   </>
                 )}

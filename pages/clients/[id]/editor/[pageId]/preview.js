@@ -1,22 +1,17 @@
 import React, { useState, useEffect } from "react";
-import SimpleContent from "@/components/blocks/SimpleContent";
 import { Container } from "@/components/blocks/Container";
 import { useAppContext } from "@/context/AppWrapper";
-// Blocks
-import { HeadingDescriptionCta, HeadingWithContent } from "@/components/blocks";
-
+import Logo from "@/resources/Logo";
 import { Editor, Frame, Element } from "@craftjs/core";
-
+// All Blocks
+import AllBlocks from "@/lib/AllBlocks";
 // SEO
 import { NextSeo } from "next-seo";
-
 // Static Blocks
 import FrameHeader from "@/components/blocks/staticBlocks/FrameHeader";
 import FrameFooter from "@/components/blocks/staticBlocks/FrameFooter";
-
 // Compressor
 import lz from "lzutf8";
-
 // Fetchers
 import Spinner from "@/components/core/Spinner";
 import { useRouter } from "next/router";
@@ -59,32 +54,68 @@ const PagePreview = () => {
         title={data ? pageData.title : `Generating Preview | Design Lab | OneIMS`}
         description={data ? pageData.description : `Preview page`}
       />
-      <Editor
-        enabled={false}
-        resolver={{ Container, HeadingWithContent, SimpleContent, HeadingDescriptionCta }}
-      >
-        <FrameHeader loading={isLoading} clientData={data ? clientData : null} />
+      <Editor enabled={false} resolver={AllBlocks}>
+        <FrameHeader
+          className="FRAME__sidebar-enabled mx-auto lg:mr-0 lg:ml-auto bg-white relative z-10"
+          hideLogoOnLarge={true}
+          loading={isLoading}
+          clientData={data ? clientData : null}
+        />
         <main>
-          <div className="RENDERER">
-            {data && (
-              <>
-                <div style={{ display: pageReady ? "block" : "none" }}>
-                  <Frame key={previewCounter} data={editorState}>
-                    <Element is={Container} padding={0} background="#fff"></Element>
-                  </Frame>
+          <div className="viewport">
+            <div
+              style={{ width: "16.5rem" }}
+              className="aside hidden lg:block bg-white border-r-2 border-r-theme-panel fixed z-2 right-auto top-0 pb-10 overflow-y-auto h-screen"
+            >
+              <div className="absolute inset-0 w-full h-full">
+                <img
+                  src="https://tailwindcss.com/_next/static/media/docs@30.beeb08605f12f699c5abc3814763b65e.avif"
+                  alt=""
+                />
+              </div>
+              <div className="pt-3 pb-3 px-6 border-b-2 border-b-theme-panel">
+                <div className="text-center text-theme-primary">
+                  <Logo primary />
                 </div>
-              </>
-            )}
-            {!pageReady && (
-              <>
-                <div
-                  className="flex justify-center items-center flex-col"
-                  style={{ height: "700px" }}
-                >
-                  <Spinner />
-                </div>
-              </>
-            )}
+              </div>
+              <div className="px-6 pt-6">
+                <h2 className="font-small mb-2">Navigation</h2>
+                <span className="COMPONENT__skeleton-box mt-2 h-5 w-44 inline-block rounded-xl"></span>
+                <span className="COMPONENT__skeleton-box mt-2 h-5 w-40 inline-block rounded-xl"></span>
+                <span className="COMPONENT__skeleton-box mt-2 h-5 w-44 inline-block rounded-xl"></span>
+                <span className="COMPONENT__skeleton-box mt-2 h-5 w-36 inline-block rounded-xl"></span>
+                <span className="COMPONENT__skeleton-box mt-2 h-5 w-44 inline-block rounded-xl"></span>
+                <span className="COMPONENT__skeleton-box mt-2 h-5 w-48 inline-block rounded-xl"></span>
+                <span className="COMPONENT__skeleton-box mt-2 h-5 w-44 inline-block rounded-xl"></span>
+                {/*  */}
+                <span className="COMPONENT__skeleton-box mt-2 h-5 w-44 inline-block rounded-xl"></span>
+                <span className="COMPONENT__skeleton-box mt-2 h-5 w-36 inline-block rounded-xl"></span>
+                <span className="COMPONENT__skeleton-box mt-2 h-5 w-44 inline-block rounded-xl"></span>
+                <span className="COMPONENT__skeleton-box mt-2 h-5 w-48 inline-block rounded-xl"></span>
+                <span className="COMPONENT__skeleton-box mt-2 h-5 w-44 inline-block rounded-xl"></span>
+              </div>
+            </div>
+            <div className="RENDERER FRAME__sidebar-enabled lg:ml-auto lg:mr-0">
+              {data && (
+                <>
+                  <div style={{ display: pageReady ? "block" : "none" }}>
+                    <Frame key={previewCounter} data={editorState}>
+                      <Element is={Container} padding={0} background="#fff"></Element>
+                    </Frame>
+                  </div>
+                </>
+              )}
+              {!pageReady && (
+                <>
+                  <div
+                    className="flex justify-center items-center flex-col"
+                    style={{ height: "700px" }}
+                  >
+                    <Spinner />
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </main>
         {pageReady && (
@@ -107,7 +138,7 @@ const PagePreview = () => {
           </div>
         )}
 
-        <FrameFooter />
+        <FrameFooter className="FRAME__sidebar-enabled mx-auto lg:mr-0 lg:ml-auto" />
       </Editor>
     </>
   );

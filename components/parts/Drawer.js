@@ -8,7 +8,7 @@ const Drawer = (props) => {
     <>
       <div
         className={`COMPONENT__tint ${
-          props.active && `COMPONENT__tint-active`
+          props.active && `COMPONENT__tint-active backdrop-filter backdrop-blur-sm`
         } tint w-full h-full fixed inset-0 bg-gray-700 bg-opacity-80 CUSTOM__z-index-high`}
       ></div>
       <div

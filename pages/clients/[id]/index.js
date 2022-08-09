@@ -29,7 +29,9 @@ const ClientSingular = () => {
               <div className="cursor-pointer card shadow-lg mb-5 text-theme-text border-2 border-theme-border">
                 <div className="card-body">
                   <h2 className="card-title">Blueprint Designer</h2>
-                  <p>Rerum reiciendis beatae tenetur excepturi</p>
+                  <p>
+                    Create marketing blueprints and design prototypes from a drag and drop editor
+                  </p>
                   <button
                     type="button"
                     className="px-6 py-2 mt-4 w-max rounded border border-theme-border bg-theme-panel-dark text-theme-text-light text-sm hover:bg-theme-panel-hover"
@@ -40,7 +42,7 @@ const ClientSingular = () => {
               </div>
             </Link>
 
-            <div className="card shadow-lg text-theme-text border-2 border-theme-border">
+            {/* <div className="card shadow-lg text-theme-text border-2 border-theme-border">
               <div className="card-body">
                 <h2 className="card-title">Prototype Designer</h2>
                 <p>Rerum reiciendis beatae tenetur excepturi</p>
@@ -51,7 +53,7 @@ const ClientSingular = () => {
                   Coming Soon
                 </button>
               </div>
-            </div>
+            </div> */}
           </ContentWrapper>
         )}
       </Main>

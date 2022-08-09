@@ -5,20 +5,17 @@ import Main from "@/components/layouts/Main";
 import ContentWrapper from "@/components/parts/ContentWrapper";
 import Drawer from "@/components/parts/Drawer";
 import { useAppContext } from "@/context/AppWrapper";
-import Link from "next/link";
 import Spinner from "@/components/core/Spinner";
-
 import { useSWRConfig } from "swr";
 import axios from "axios";
 import { Sleeper } from "@/lib/Helpers";
-
 import { useBlueprintByIdGET } from "@/lib/Fetcher";
 import { useRouter } from "next/router";
-
 import { useForm } from "react-hook-form";
 import { InputLF, TextareaLF } from "@/components/core/FormElements";
-
 import { Dialog, Transition } from "@headlessui/react";
+import { format } from "date-fns";
+import toast, { Toaster } from "react-hot-toast";
 
 import {
   DndContext,
@@ -58,6 +55,10 @@ const BlueprintSingular = () => {
     formState: { errors: errorsNewPage },
   } = useForm({ mode: "all" });
   const [openModal, setOpenModal] = useState(false);
+  const [modalIntent, setModalIntent] = useState({
+    type: null,
+    data: null,
+  });
   const [updateBlueprint, setUpdateBlueprint] = useState({
     response: null,
     isLoading: false,
@@ -68,59 +69,24 @@ const BlueprintSingular = () => {
     isLoading: false,
     isError: null,
   });
-  const [updatePage, setUpdatePage] = useState({
+  const [clonePage, setClonePage] = useState({
     response: null,
     isLoading: false,
     isError: null,
   });
-  const [items, setItems] = useState([
-    {
-      id: 1,
-      orderId: 1,
-      title: "Dummy Page",
-      status: "Draft",
-    },
-    {
-      id: 2,
-      orderId: 2,
-      title: "Dummy Page 2",
-      status: "Draft",
-    },
-    {
-      id: 3,
-      orderId: 3,
-      title: "Dummy Page 3",
-      status: "Published",
-    },
-    {
-      id: 4,
-      orderId: 4,
-      title: "Dummy Page 4",
-      status: "Draft",
-    },
-    {
-      id: 5,
-      orderId: 5,
-      title: "Dummy Page 5",
-      status: "Draft",
-    },
-    {
-      id: 6,
-      orderId: 6,
-      title: "Dummy Page 6",
-      status: "Draft",
-    },
-  ]);
+  const [updateOrderIds, setUpdateOrderIds] = useState({
+    response: null,
+    isLoading: false,
+    isError: null,
+  });
 
   let attributes, client, pages;
   if (data) {
-    console.log(data);
     attributes = data.data.attributes;
     client = attributes.client.data.attributes;
     pages = attributes.pages.data;
+    pages = pages.sort((a, b) => a.attributes.orderId - b.attributes.orderId);
   }
-
-  console.log(pages);
 
   const updateBlueprintMeta = (updatedData) => {
     setUpdateBlueprint((prevState) => ({ ...prevState, isLoading: true }));
@@ -199,6 +165,7 @@ const BlueprintSingular = () => {
             window.location.href = `/clients/${id}/editor/${res.data.data.id}`;
           }
           setOpenModal(false);
+          removeModalIntent();
           resetFieldNewPage("pageTitle");
           setErrorNewPage("pageTitle", { type: "required" });
         })
@@ -210,6 +177,49 @@ const BlueprintSingular = () => {
     postPayload();
   };
 
+  const handleClonePage = (pageData) => {
+    setClonePage((prevState) => ({ ...prevState, isLoading: true }));
+    const payload = {
+      data: pageData,
+    };
+    const postPayload = async () => {
+      await axios
+        .post(`${process.env.NEXT_PUBLIC_API_URL}/pages/`, payload)
+        .then(Sleeper(500))
+        .then((res) => {
+          setNewPage((prevState) => ({
+            ...prevState,
+            response: res.data.data,
+            isLoading: false,
+          }));
+          mutate(
+            `${process.env.NEXT_PUBLIC_API_URL}/blueprints/${blueprintId}?populate=client&populate=pages`
+          );
+          if (typeof window !== "undefined") {
+            window.location.href = `/clients/${id}/editor/${res.data.data.id}`;
+          }
+          setOpenModal(false);
+          removeModalIntent();
+        })
+        .catch((err) => {
+          console.log(err);
+          setNewPage((prevState) => ({ ...prevState, isError: true, isLoading: false }));
+        });
+    };
+    postPayload();
+  };
+
+  const handleModalIntent = (type, data) => {
+    console.log(modalIntent);
+    setModalIntent((prevState) => ({ ...prevState, type, data }));
+  };
+
+  const removeModalIntent = () => {
+    setTimeout(() => {
+      setModalIntent((prevState) => ({ ...prevState, type: null, data: null }));
+    }, 200);
+  };
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -217,75 +227,71 @@ const BlueprintSingular = () => {
     })
   );
 
-  // function handleDragEnd(event) {
-  //   const { active, over } = event;
-
-  //   if (active.id !== over.id) {
-  //     setItems((items) => {
-  //       const oldIndex = items.findIndex((x) => x.id === active.id);
-  //       const newIndex = items.findIndex((x) => x.id === over.id);
-  //       return arrayMove(items, oldIndex, newIndex);
-  //     });
-  //     setItems((items) => {
-  //       const updatedItems = items.map((elem, index) => {
-  //         const obj = elem;
-  //         obj.orderId = index + 1;
-  //         return obj;
-  //       });
-  //       return arrayMove(updatedItems);
-  //     });
-  //   }
-  // }
-
   function handleDragEnd(event) {
     const { active, over } = event;
-
-    // const updatePage = (updatedData) => {
-    //   setUpdatePage((prevState) => ({ ...prevState, isLoading: true }));
-    //   const payload = {
-    //     data: {
-    //       title: updatedData.blueprintTitle,
-    //       description: updatedData.blueprintDescription,
-    //     },
-    //   };
-    //   const putPayload = async () => {
-    //     await axios
-    //       .put(`${process.env.NEXT_PUBLIC_API_URL}/blueprints/${blueprintId}`, payload)
-    //       .then(Sleeper(500))
-    //       .then((res) => {
-    //         mutate(
-    //           `${process.env.NEXT_PUBLIC_API_URL}/blueprints/${blueprintId}?populate=client&populate=pages`,
-    //           (data) => {
-    //             return {
-    //               ...data,
-    //               data: {
-    //                 ...data.data,
-    //                 attributes: {
-    //                   ...data.data.attributes,
-    //                   title: updatedData.blueprintTitle,
-    //                 },
-    //               },
-    //             };
-    //           },
-    //           false
-    //         );
-    //         setUpdateBlueprint((prevState) => ({
-    //           ...prevState,
-    //           response: res.data.data,
-    //           isLoading: false,
-    //         }));
-    //         mutate(
-    //           `${process.env.NEXT_PUBLIC_API_URL}/blueprints/${blueprintId}?populate=client&populate=pages`
-    //         );
-    //         handlers.handleDrawer();
-    //       })
-    //       .catch((err) => {
-    //         console.log(err);
-    //         setUpdateBlueprint((prevState) => ({ ...prevState, isError: true, isLoading: false }));
-    //       });
-    //   };
-    //   putPayload();
-    // };
+    let movedArray;
+    const handleOrderIds = () => {
+      if (movedArray && movedArray.length < 1) return null;
+      setUpdateOrderIds((prevState) => ({ ...prevState, isLoading: true }));
+      let endpoints = movedArray.map((elem) => {
+        return `${process.env.NEXT_PUBLIC_API_URL}/pages/${elem.id}`;
+      });
+      const putPayload = async () => {
+        await axios
+          .all(
+            endpoints.map((elem, index) => {
+              return axios.put(elem, {
+                data: {
+                  orderId: index + 1,
+                },
+              });
+            })
+          )
+          .then(Sleeper(700))
+          .then(
+            axios.spread((...res) => {
+              // mutate(
+              //   `${process.env.NEXT_PUBLIC_API_URL}/blueprints/${blueprintId}?populate=client&populate=pages`,
+              //   (data) => {
+              //     const oldIndex = pages.findIndex((x) => x.id === active.id);
+              //     const newIndex = pages.findIndex((x) => x.id === over.id);
+              //     movedArray = arrayMove(pages, oldIndex, newIndex);
+              //     console.log(movedArray);
+              //     return {
+              //       ...data,
+              //       data: {
+              //         ...data.data,
+              //         attributes: {
+              //           ...data.data.attributes,
+              //           pages: {
+              //             ...data.data.attributes.pages,
+              //             data: movedArray,
+              //           },
+              //         },
+              //       },
+              //     };
+              //   },
+              //   false
+              // );
+              setUpdateOrderIds((prevState) => ({
+                ...prevState,
+                response: res,
+                isLoading: false,
+              }));
+              toast.success("Order updated successfully");
+            })
+            // .catch((err) => {
+            //   console.log(err);
+            //   setUpdateOrderIds((prevState) => ({
+            //     ...prevState,
+            //     isError: true,
+            //     isLoading: false,
+            //   }));
+            // })
+          );
+      };
+      putPayload();
+    };
 
     if (active.id !== over.id) {
       mutate(
@@ -293,8 +299,11 @@ const BlueprintSingular = () => {
         (data) => {
           const oldIndex = pages.findIndex((x) => x.id === active.id);
           const newIndex = pages.findIndex((x) => x.id === over.id);
-          const movedArray = arrayMove(pages, oldIndex, newIndex);
-          console.log(data, oldIndex, newIndex, movedArray);
+          movedArray = arrayMove(pages, oldIndex, newIndex);
+          movedArray.forEach((elem, index) => {
+            elem.attributes.orderId = index + 1;
+          });
+          console.log(`movedArray`, movedArray);
           return {
             ...data,
             data: {
@@ -311,20 +320,7 @@ const BlueprintSingular = () => {
         },
         false
       );
-
-      // setItems((items) => {
-      //   const oldIndex = items.findIndex((x) => x.id === active.id);
-      //   const newIndex = items.findIndex((x) => x.id === over.id);
-      //   return arrayMove(items, oldIndex, newIndex);
-      // });
-      // setItems((items) => {
-      //   const updatedItems = items.map((elem, index) => {
-      //     const obj = elem;
-      //     obj.orderId = index + 1;
-      //     return obj;
-      //   });
-      //   return arrayMove(updatedItems);
-      // });
+      handleOrderIds();
     }
   }
 
@@ -341,6 +337,7 @@ const BlueprintSingular = () => {
             title={attributes.title}
             clientTitle={client.title}
             clientRoute={`/clients/${id}/bp`}
+            publicURL={`/blueprint/${blueprintId}`}
             renderActionButton
             renderOptionsButton
             actionsOnClick={() => setOpenModal(true)}
@@ -385,7 +382,8 @@ const BlueprintSingular = () => {
                 <thead className="bg-theme-panel border-b border-theme-border">
                   <tr>
                     <th>Name</th>
-                    <th>Updated Date</th>
+                    <th>Last Updated</th>
+                    <th>Publish Date</th>
                     <th>Created Date</th>
                   </tr>
                 </thead>
@@ -396,14 +394,24 @@ const BlueprintSingular = () => {
                     onDragEnd={handleDragEnd}
                   >
                     <SortableContext items={pages} strategy={verticalListSortingStrategy}>
-                      {pages.map((elem) => (
+                      {pages.map((elem, index) => (
                         <SortableItem
                           key={elem.id}
                           clientId={id}
                           id={elem.id}
-                          title={elem.attributes.title}
-                          order={elem.attributes.orderId}
-                          status={elem.attributes.status}
+                          index={index}
+                          attributes={elem?.attributes}
+                          title={elem.attributes?.title}
+                          order={elem.attributes?.orderId}
+                          status={elem.attributes?.status}
+                          createdAt={elem.attributes?.createdAt}
+                          updatedAt={elem.attributes?.updatedAt}
+                          publishedAt={elem.attributes?.publishedAtTimestamp}
+                          pages={pages}
+                          blueprintId={blueprintId}
+                          setOpenModal={setOpenModal}
+                          modalIntent={modalIntent}
+                          handleModalIntent={handleModalIntent}
                         />
                       ))}
                     </SortableContext>
@@ -412,38 +420,6 @@ const BlueprintSingular = () => {
               </table>
             </div>
           )}
-          {/* {data && pages.length > 0 && (
-            <div className="overflow-x-auto border border-theme-border">
-              <table className="COMPONENT__table table w-full text-theme-text text-sm">
-                <thead className="bg-theme-panel border-b border-theme-border">
-                  <tr>
-                    <th>Name</th>
-                    <th>Updated Date</th>
-                    <th>Created Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <DndContext
-                    sensors={sensors}
-                    collisionDetection={closestCenter}
-                    onDragEnd={handleDragEnd}
-                  >
-                    <SortableContext items={items} strategy={verticalListSortingStrategy}>
-                      {items.map((elem, index) => (
-                        <SortableItem
-                          key={elem.id}
-                          id={elem.id}
-                          title={elem.title}
-                          order={elem.orderId}
-                          status={elem.status}
-                        />
-                      ))}
-                    </SortableContext>
-                  </DndContext>
-                </tbody>
-              </table>
-            </div>
-          )} */}
         </ContentWrapper>
       </Main>
       {data && (
@@ -480,7 +456,13 @@ const BlueprintSingular = () => {
         </Drawer>
       )}
       <Transition.Root show={openModal} as={Fragment}>
-        <Dialog as="div" className="fixed z-10 inset-0 overflow-y-auto" onClose={setOpenModal}>
+        <Dialog
+          as="div"
+          className="fixed z-10 inset-0 overflow-y-auto"
+          onClose={() => {
+            removeModalIntent(), setOpenModal(false);
+          }}
+        >
           <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <Transition.Child
               as={Fragment}
@@ -510,44 +492,81 @@ const BlueprintSingular = () => {
               <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                 <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                    <Dialog.Title as="h3" className="text-lg leading-6 font-medium text-gray-900">
-                      Add a New Page {data && `for ${data.data.attributes.title}`}
-                    </Dialog.Title>
-                    <div className="mt-2">
-                      <p className="text-sm text-gray-500">
-                        A blueprint may consist of multiple pages and acts as a resource for the
-                        client&apos;s marketing strategy.
-                      </p>
-                    </div>
-                    <div className="mt-2">
-                      <form onSubmit={handleSubmitNewPage(createNewPage)}>
-                        <InputLF
-                          type="text"
-                          wrapperClassName="mt-5 text-left"
-                          label="Page Title*"
-                          name="pageTitle"
-                          register={registerNewPage}
-                          rest={{ required: true }}
-                        />
-                      </form>
-                    </div>
+                    {modalIntent.type === "clone" ? (
+                      <>
+                        <Dialog.Title
+                          as="h3"
+                          className="text-lg leading-6 font-medium text-gray-900"
+                        >
+                          Clone {modalIntent.data && `${modalIntent.data.originalPageTitle}`}
+                        </Dialog.Title>
+                        <div className="mt-2">
+                          <p className="text-sm text-gray-500">
+                            Cloning {modalIntent.data && `${modalIntent.data.originalPageTitle}`}{" "}
+                            will create a copy of the page. The cloned page will be set as a draft.
+                          </p>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <Dialog.Title
+                          as="h3"
+                          className="text-lg leading-6 font-medium text-gray-900"
+                        >
+                          Add a New Page {data && `for ${data.data.attributes.title}`}
+                        </Dialog.Title>
+                        <div className="mt-2">
+                          <p className="text-sm text-gray-500">
+                            A blueprint may consist of multiple pages and acts as a resource for the
+                            client&apos;s marketing strategy.
+                          </p>
+                        </div>
+                        <div className="mt-2">
+                          <form onSubmit={handleSubmitNewPage(createNewPage)}>
+                            <InputLF
+                              type="text"
+                              wrapperClassName="mt-5 text-left"
+                              label="Page Title*"
+                              name="pageTitle"
+                              register={registerNewPage}
+                              rest={{ required: true }}
+                            />
+                          </form>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
                 <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                  <button
-                    type="button"
-                    className={`${errorsNewPage.pageTitle && `opacity-50 pointer-events-none`} ${
-                      newPage.isLoading && `opacity-50 pointer-events-none`
-                    } w-full inline-flex justify-center rounded border border-transparent px-6 py-2 bg-theme-primary font-medium text-white hover:bg-theme-primary-hover sm:ml-3 sm:w-auto sm:text-sm`}
-                    onClick={handleSubmitNewPage(createNewPage)}
-                  >
-                    {newPage.isLoading && <Spinner button white />}
-                    Create Page
-                  </button>
+                  {modalIntent.type === "clone" ? (
+                    <button
+                      type="button"
+                      className={`${
+                        clonePage.isLoading && `opacity-50 pointer-events-none`
+                      } w-full inline-flex justify-center rounded border border-transparent px-6 py-2 bg-theme-primary font-medium text-white hover:bg-theme-primary-hover sm:ml-3 sm:w-auto sm:text-sm`}
+                      onClick={() => handleClonePage(modalIntent.data)}
+                    >
+                      {clonePage.isLoading && <Spinner button white />}
+                      Clone Page
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className={`${errorsNewPage.pageTitle && `opacity-50 pointer-events-none`} ${
+                        newPage.isLoading && `opacity-50 pointer-events-none`
+                      } w-full inline-flex justify-center rounded border border-transparent px-6 py-2 bg-theme-primary font-medium text-white hover:bg-theme-primary-hover sm:ml-3 sm:w-auto sm:text-sm`}
+                      onClick={handleSubmitNewPage(createNewPage)}
+                    >
+                      {newPage.isLoading && <Spinner button white />}
+                      Create Page
+                    </button>
+                  )}
                   <button
                     type="button"
                     className="mt-3 w-full inline-flex justify-center rounded border border-theme-border px-6 py-2 bg-theme-panel-dark text-theme-text-light hover:bg-theme-panel-hover sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                    onClick={() => setOpenModal(false)}
+                    onClick={() => {
+                      removeModalIntent(), setOpenModal(false);
+                    }}
                   >
                     Cancel
                   </button>
@@ -557,12 +576,44 @@ const BlueprintSingular = () => {
           </div>
         </Dialog>
       </Transition.Root>
+      {updateOrderIds.isLoading && (
+        <>
+          <div className="COMPONENT__tint COMPONENT__tint-active backdrop-filter backdrop-blur-sm tint w-full h-full fixed inset-0 bg-gray-700 bg-opacity-80 CUSTOM__z-index-high">
+            <div
+              className="absolute top-1/2 left-1/2"
+              style={{ transform: `translate(-50%, -50%)` }}
+            >
+              <div>
+                <span className="text-white text-center block mb-4">
+                  Updating pages order, this should be quick...
+                </span>
+                <Spinner white />
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+      <Toaster />
     </>
   );
 };
 
 const SortableItem = (props) => {
-  const router = useRouter();
+  const timestamps = {
+    createdAt: {
+      date: props?.createdAt ? format(new Date(props?.createdAt), "MMM d, yyyy") : `...`,
+      time: props?.createdAt ? format(new Date(props?.createdAt), "hh:mm a") : `...`,
+    },
+    updatedAt: {
+      date: props?.updatedAt ? format(new Date(props?.updatedAt), "MMM d, yyyy") : `N/A`,
+      time: props?.updatedAt ? format(new Date(props?.updatedAt), "hh:mm a") : `...`,
+    },
+    publishedAt: {
+      date: props?.publishedAt ? format(new Date(props?.publishedAt), "MMM d, yyyy") : `N/A`,
+      time: props?.publishedAt ? format(new Date(props?.publishedAt), "hh:mm a") : `...`,
+    },
+  };
+
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: props.id,
   });
@@ -573,24 +624,95 @@ const SortableItem = (props) => {
   };
 
   return (
-    <tr ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <tr ref={setNodeRef} style={style} className="auto-cursor">
       <td>
-        <a href={`/clients/${props.clientId}/editor/${props.id}`}>{props.title}</a>
-        <span className="text-xs block mb-1 mt-1">Order: {props.order}</span>
-        <span className="text-xs block mt-2">
-          <div
-            className={`indicator w-2 h-2 mr-1 rounded-full ${
-              props.status === "published" ? `bg-green-500` : `bg-gray-400`
-            }`}
-          ></div>{" "}
-          {props.status === "published" ? `Published` : `Draft`}
+        <div className="flex justify-between items-center -m-2">
+          <div className="column px-2">
+            <div className="flex -m-2 py-3 items-center">
+              <div className="column px-2 cursor-grab py-4" {...attributes} {...listeners}>
+                <div className="pr-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" style={{ width: "5px", height: "24px" }}>
+                    <path
+                      fill="#516f90"
+                      d="M0 0h2v2H0V0zm0 8h2v2H0V8zm0 8h2v2H0v-2zM0 4h2v2H0V4zm0 8h2v2H0v-2zm0 8h2v2H0v-2zM3 0h2v2H3V0zm0 8h2v2H3V8zm0 8h2v2H3v-2zM3 4h2v2H3V4zm0 8h2v2H3v-2zm0 8h2v2H3v-2z"
+                    />
+                  </svg>
+                </div>
+              </div>
+              <div className="column px-2">
+                <div>
+                  <span>{props.title}</span>
+                  <span className="text-xs block mb-1 mt-1">Order: {props.order}</span>
+                  <span className="text-xs block mt-2">
+                    <div
+                      className={`indicator w-2 h-2 mr-1 rounded-full ${
+                        props.status === "published" ? `bg-green-500` : `bg-gray-400`
+                      }`}
+                    ></div>{" "}
+                    {props.status === "published" ? `Published` : `Draft`}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="column px-2">
+            <div className="flex justify-between items-center -m-2">
+              <div className="column px-2">
+                <a href={`/clients/${props.clientId}/editor/${props.id}`}>
+                  <button
+                    type="button"
+                    className="cursor-pointer px-6 py-2 w-max rounded border border-theme-border bg-theme-panel-dark text-theme-text-light text-xs hover:bg-theme-panel-hover"
+                  >
+                    Edit
+                  </button>
+                </a>
+              </div>
+              <div className="column px-2">
+                <button
+                  onClick={() => {
+                    const { attributes } = props;
+                    props.handleModalIntent("clone", {
+                      originalPageTitle: `${attributes.title}`,
+                      title: `${attributes.title} (Cloned)`,
+                      draftTitle: `${attributes.draftTitle} (Cloned)`,
+                      description: `${attributes.description}`,
+                      draftDescription: attributes.draftDescription,
+                      draftEditorState: attributes.draftEditorState,
+                      blueprint: props.blueprintId,
+                      client: props.clientId,
+                      status: "draft",
+                      type: "blueprint",
+                      orderId: props.pages.length > 0 ? props.pages.length + 1 : 1,
+                    });
+                    props.setOpenModal(true);
+                  }}
+                  type="button"
+                  className="cursor-pointer px-6 py-2 w-max rounded border border-theme-border bg-theme-panel-dark text-theme-text-light text-xs hover:bg-theme-panel-hover"
+                >
+                  Clone
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </td>
+      <td>
+        {timestamps.updatedAt.date ? timestamps.updatedAt.date : `...`}
+        <span className="text-xs block">
+          {timestamps.updatedAt.time ? timestamps.updatedAt.time : `...`}
         </span>
       </td>
       <td>
-        May 29, 2021<span className="text-xs block">11:55 PM</span>
+        {timestamps.publishedAt.date ? timestamps.publishedAt.date : `...`}
+        <span className="text-xs block">
+          {timestamps.publishedAt.time ? timestamps.publishedAt.time : ``}
+        </span>
       </td>
       <td>
-        May 29, 2021<span className="text-xs block">11:55 PM</span>
+        {timestamps.createdAt.date ? timestamps.createdAt.date : `...`}
+        <span className="text-xs block">
+          {timestamps.createdAt.time ? timestamps.createdAt.time : ``}
+        </span>
       </td>
     </tr>
   );

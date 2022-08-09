@@ -135,6 +135,7 @@ const Infobar = (props) => {
             <div className="theme-row flex items-center -mx-1">
               <div className="theme-column px-1">
                 <a
+                  onClick={() => props.updatePageDraft()}
                   href={`${props.router.asPath}/preview?ref=editor`}
                   target="_blank"
                   rel="noreferrer"

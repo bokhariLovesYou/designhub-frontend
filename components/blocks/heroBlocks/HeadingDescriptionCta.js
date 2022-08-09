@@ -1,7 +1,6 @@
 import React from "react";
-import { useState } from "react";
 import { useNode, useEditor } from "@craftjs/core";
-import { Textarea, Select, Toggle, ImageField } from "@/components/core/FormElements";
+import { Textarea, Toggle, ImageField, LinkField } from "@/components/core/FormElements";
 import { Disclosure } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/solid";
 
@@ -9,14 +8,18 @@ import BlockSection from "@/components/blocks/globals/BlockSection";
 import BlockSectionSettings from "@/components/blocks/globals/BlockSectionSettings";
 
 const HeadingDescriptionCta = ({
+  // Block Settings
   backgroundColor,
   borderTop,
   borderBottom,
   paddingTop,
   paddingBottom,
   invertText,
+  // Content Settings
   heading,
   content,
+  buttonTitle,
+  buttonDestination,
   backgroundImage,
   tint,
 }) => {
@@ -62,15 +65,15 @@ const HeadingDescriptionCta = ({
       paddingTop={paddingTop}
       paddingBottom={paddingBottom}
       invertText={invertText}
-      blockClassName={`BLOCK__headingDescriptionCTA`}
+      blockClassName={`BLOCK__hero-blocks__HeadingDescriptionCTA`}
     >
       <div
-        className={`BLOCK__headingDescriptionCTA__wrapper ${
+        className={`BLOCK__hero-blocks__HeadingDescriptionCTA__wrapper ${
           invertText ? `THEME__text-inverted` : ``
         }`}
       >
         {backgroundImage && (
-          <div className="BLOCK__headingDescriptionCTA__image-wrapper">
+          <div className="BLOCK__hero-blocks__HeadingDescriptionCTA__image-wrapper">
             <img src={backgroundImage.url} alt={backgroundImage.alt} />
           </div>
         )}
@@ -78,20 +81,26 @@ const HeadingDescriptionCta = ({
         <div className="container">
           <div className="THEME__mw-700">
             {heading && (
-              <div className="BLOCK__headingDescriptionCTA__heading-wrapper">
-                <h1 className="BLOCK__headingDescriptionCTA__heading">{heading}</h1>
+              <div className="BLOCK__hero-blocks__HeadingDescriptionCTA__heading-wrapper">
+                <h1 className="BLOCK__hero-blocks__HeadingDescriptionCTA__heading">{heading}</h1>
               </div>
             )}
             {content && (
-              <div className="BLOCK__headingDescriptionCTA__description-wrapper">
-                <p className="BLOCK__headingDescriptionCTA__description">{content}</p>
+              <div className="BLOCK__hero-blocks__HeadingDescriptionCTA__description-wrapper">
+                <p className="BLOCK__hero-blocks__HeadingDescriptionCTA__description">{content}</p>
               </div>
             )}
-            <a href="#">
-              <button type="button" className="THEME__button THEME__button-primary">
-                Get Started
-              </button>
-            </a>
+            {buttonTitle && (
+              <a
+                href={buttonDestination ? buttonDestination : "#"}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <button type="button" className="THEME__button THEME__button-primary">
+                  {buttonTitle}
+                </button>
+              </a>
+            )}
           </div>
         </div>
       </div>
@@ -104,11 +113,15 @@ const HeadingDescriptionCtaSettings = () => {
     actions: { setProp },
     heading,
     content,
+    buttonTitle,
+    buttonDestination,
     backgroundImage,
     tint,
   } = useNode((node) => ({
     heading: node.data.props.heading,
     content: node.data.props.content,
+    buttonTitle: node.data.props.buttonTitle,
+    buttonDestination: node.data.props.buttonDestination,
     backgroundImage: node.data.props.backgroundImage,
     tint: node.data.props.tint,
   }));
@@ -116,7 +129,7 @@ const HeadingDescriptionCtaSettings = () => {
     <>
       <div className="">
         <div className="">
-          <Disclosure defaultOpen={true}>
+          <Disclosure defaultOpen={false}>
             {({ open }) => (
               <>
                 <Disclosure.Button className="flex items-center justify-between w-full px-4 py-3 font-medium text-left hover:bg-theme-panel border-theme-border border-b text-theme-text-light">
@@ -157,6 +170,18 @@ const HeadingDescriptionCtaSettings = () => {
                     onChange={(e) => setProp((props) => (props.content = e.target.value))}
                     value={content}
                     placeholder="Add Content"
+                  />
+                  <LinkField
+                    label="Button Title"
+                    linkTitleOnChange={(e) =>
+                      setProp((props) => (props.buttonTitle = e.target.value))
+                    }
+                    linkDestinationOnChange={(e) =>
+                      setProp((props) => (props.buttonTitle = e.target.value))
+                    }
+                    linkTitleValue={buttonTitle}
+                    linkDestinationValue={buttonDestination}
+                    placeholder="Add Button Title"
                   />
                   <ImageField
                     wrapperClassName="mt-5"
@@ -199,6 +224,8 @@ HeadingDescriptionCta.craft = {
     // Default Content Props
     heading: `Powerful Section Heading to Insure Readability`,
     content: `Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliq Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam`,
+    buttonTitle: `Get Started`,
+    buttonDestination: `#`,
     backgroundImage: null,
     tint: false,
   },
