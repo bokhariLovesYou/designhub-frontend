@@ -58,10 +58,7 @@ const PublicBluePrintPage = ({ archiveData, singularData }) => {
               className="aside hidden lg:block bg-white border-r-2 border-r-theme-panel fixed z-2 right-auto top-0 pb-10 overflow-y-auto h-screen"
             >
               <div className="absolute inset-0 w-full h-full">
-                <img
-                  src="https://tailwindcss.com/_next/static/media/docs@30.beeb08605f12f699c5abc3814763b65e.avif"
-                  alt=""
-                />
+                <img src="/docs@30.beeb08605f12f699c5abc3814763b65e.png" alt="" />
               </div>
               <div className="pt-3 pb-3 px-6 border-b-2 border-b-theme-panel">
                 <div className="text-center text-theme-primary">
