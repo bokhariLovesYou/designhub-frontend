@@ -1,11 +1,16 @@
-import React from "react";
+import React, { useEffect } from "react";
 import DashboardHeader from "@/components/parts/DashboardHeader";
 import PageTitle from "@/components/parts/PageTitle";
 import Main from "@/components/layouts/Main";
 import ContentWrapper from "@/components/parts/ContentWrapper";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 export default function App() {
+  const router = useRouter();
+  useEffect(() => {
+    router.push(`/clients`);
+  }, []);
   return (
     <>
       <DashboardHeader logoCentered />
