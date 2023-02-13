@@ -13,7 +13,7 @@ export default function App() {
   }, []);
   return (
     <>
-      <DashboardHeader logoCentered />
+      {/* <DashboardHeader logoCentered />
       <Main>
         <PageTitle title="Client Name" className="text-center" />
         <ContentWrapper className="max-w-lg pt-9">
@@ -45,7 +45,7 @@ export default function App() {
             </div>
           </div>
         </ContentWrapper>
-      </Main>
+      </Main> */}
     </>
   );
 }
