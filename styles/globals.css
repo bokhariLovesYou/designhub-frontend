@@ -3,5 +3,5 @@
 @tailwind utilities;
 
 html {
-  background: #fff;
+  background: #fff !important;
 }
